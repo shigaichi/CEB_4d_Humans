@@ -288,7 +288,7 @@ def ik_control_panel(context, layout, row, path_venv, file_fbx):
 class FOURDHUMANS_PT_Panel(bpy.types.Panel):
     # bl_idname = "CEB_PT_TA"
     bl_label = "4D Humans"
-    bl_category = "CEB"
+    bl_category = "CEB test"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
 
