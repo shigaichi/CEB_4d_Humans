@@ -1,18 +1,18 @@
 import bpy
-from bpy.props import (PointerProperty)
+from bpy.props import PointerProperty
 from .four_d_humans_blender import *
-from . panel import *
+from .panel import *
 import os
 
 bl_info = {
-    "name" : "CEB 4D Humans",
-    "author" : "Shubham Goel, Georgios Pavlakos, Jathushan Rajasegaran, Angjoo Kanazawa, Jitendra Malik, Shin, Soyong and Kim, Juyong and Halilaj, Eni and Black, Michael J., Carlos Barreto",
-    "description" : "",
-    "blender" : (3, 5, 0),
-    "version" : (1, 0,12),
-    "location" : "UI > SidePanel",
-    "warning" : "",
-    "category" : "General"
+    "name": "CEB 4D Humans for test",
+    "author": "Shubham Goel, Georgios Pavlakos, Jathushan Rajasegaran, Angjoo Kanazawa, Jitendra Malik, Shin, Soyong and Kim, Juyong and Halilaj, Eni and Black, Michael J., Carlos Barreto",
+    "description": "",
+    "blender": (3, 5, 0),
+    "version": (1, 0, 12),
+    "location": "UI > SidePanel",
+    "warning": "",
+    "category": "General",
 }
 
 # 1.12 Beta: fixes for installation of 4d humans, added option to import smpl pkl model
@@ -41,50 +41,111 @@ bl_info = {
 
 # Adicionando path para usar GIT e ffmpeg
 path_addon = os.path.dirname(os.path.abspath(__file__))
-print('Path addon',path_addon)
+print("Path addon", path_addon)
 
-path_git = os.path.join(path_addon,'3rdparty','PortableGit','bin')
-print('Path git',path_git)
+path_git = os.path.join(path_addon, "3rdparty", "PortableGit", "bin")
+print("Path git", path_git)
 
-path_ffmpeg = os.path.join(path_addon,'3rdparty','ffmpeg_essentials','bin')
-print('Path ffmpeg',path_ffmpeg)
+path_ffmpeg = os.path.join(path_addon, "3rdparty", "ffmpeg_essentials", "bin")
+print("Path ffmpeg", path_ffmpeg)
 
-os.environ['PATH'] += ';'+path_git+';'+path_ffmpeg
-print('paths added')
-
-
-classes = (PIXELMySettings,FOURDHUMANS_PT_Panel
-    ,CreateVirtualEnviroment,InstallPYTORCHOnVenv,InstallPREDETECTRONOnVenv,InstallDETECTRONOnVenv,VenvPathSelect,InstallREQPIXELOnVenv
-    ,ImportVideo,Execute
-    ,OpenOutputFolder
-    ,ImportCharacter,ImportFBX
-    ,Smooth,ExportRAWAnimation
-    ,ReadPKLData,ImportPKLAnimation,SetIniFPS
-    ,Smooth2
-    ,FootLockMarker,FootLock,ZeroFrameTPose,RemoveLocationAnimation
-    ,ImportOfflineFiles
-    ,CreateNLAStrip,CopyNameToNLA
-    ,ACTION_UL_list,ACTION_STRIP_UL_list,RemoveNLAStrip,LoadActionToCharFromNLA,SetNoAction
-    ,AddTrack,AddActionToTrack,AddActionToTrackWTransition,RemoveActionFromtrack
-    ,Open_NLA_VIEW,SelectActionOnStrip,OrganizeStrip
-    ,MatchToPrevAction,CreateReferenceAction,Retarget,ExtractMarkedFrames,ClearMarkers,ExtractMarkedFramesForSelectedBones,OptimizeMarkerView,QuickSaveMarkers,QuickLoadMarkers,QuickSaveMarkersClear
-    ,ChangeTargetRestPose,ClearTgtMeshShapekeys,StartChangeRestTgtPose,EndChangeRestTgtPose
-    ,StartChangeRestSourcePose,EndChangeRestSourcePose
-    ,Stg2Append,MR_switch_snap_anim,Stg2retarget,Stg2Full,SwitchFKIKPart
-    ,Setupfloor,SetupFootLock,StartEndFootLock,ClearFootLock,FixFootFCurve
-    ,CreateVirtualEnviromentWHAM,InstallPYTORCHOnVenvWHAM,InstallWHAMOnVenv,DownloadWHAMCheckpoints,DownloadWHAMBodymodels
-    ,ImportSMPLPKL,ImportVideoWHAM,ExecuteWHAM
-    ,InstallSLAHMROnVenv,CreateVirtualEnviromentSLAHMR,InstallPYTORCHOnVenvSLAHMR,InstallDETECTRONOnVenvSLAHMR,InstallSLAHMRandRESTOnVenv
-    ,ExecuteSLAHMR,ImportVideoSLAHMR,Update_SLAHMR_Setting,LoadVideo3dview,ExportSLAHMRRAWAnimation,ImportZIPAnimation,ImportZIPSLAHMRDependencies
-    ,ImportOfflineCheckpointWham
-    )
+os.environ["PATH"] += ";" + path_git + ";" + path_ffmpeg
+print("paths added")
 
 
+classes = (
+    PIXELMySettings,
+    FOURDHUMANS_PT_Panel,
+    CreateVirtualEnviroment,
+    InstallPYTORCHOnVenv,
+    InstallPREDETECTRONOnVenv,
+    InstallDETECTRONOnVenv,
+    VenvPathSelect,
+    InstallREQPIXELOnVenv,
+    ImportVideo,
+    Execute,
+    OpenOutputFolder,
+    ImportCharacter,
+    ImportFBX,
+    Smooth,
+    ExportRAWAnimation,
+    ReadPKLData,
+    ImportPKLAnimation,
+    SetIniFPS,
+    Smooth2,
+    FootLockMarker,
+    FootLock,
+    ZeroFrameTPose,
+    RemoveLocationAnimation,
+    ImportOfflineFiles,
+    CreateNLAStrip,
+    CopyNameToNLA,
+    ACTION_UL_list,
+    ACTION_STRIP_UL_list,
+    RemoveNLAStrip,
+    LoadActionToCharFromNLA,
+    SetNoAction,
+    AddTrack,
+    AddActionToTrack,
+    AddActionToTrackWTransition,
+    RemoveActionFromtrack,
+    Open_NLA_VIEW,
+    SelectActionOnStrip,
+    OrganizeStrip,
+    MatchToPrevAction,
+    CreateReferenceAction,
+    Retarget,
+    ExtractMarkedFrames,
+    ClearMarkers,
+    ExtractMarkedFramesForSelectedBones,
+    OptimizeMarkerView,
+    QuickSaveMarkers,
+    QuickLoadMarkers,
+    QuickSaveMarkersClear,
+    ChangeTargetRestPose,
+    ClearTgtMeshShapekeys,
+    StartChangeRestTgtPose,
+    EndChangeRestTgtPose,
+    StartChangeRestSourcePose,
+    EndChangeRestSourcePose,
+    Stg2Append,
+    MR_switch_snap_anim,
+    Stg2retarget,
+    Stg2Full,
+    SwitchFKIKPart,
+    Setupfloor,
+    SetupFootLock,
+    StartEndFootLock,
+    ClearFootLock,
+    FixFootFCurve,
+    CreateVirtualEnviromentWHAM,
+    InstallPYTORCHOnVenvWHAM,
+    InstallWHAMOnVenv,
+    DownloadWHAMCheckpoints,
+    DownloadWHAMBodymodels,
+    ImportSMPLPKL,
+    ImportVideoWHAM,
+    ExecuteWHAM,
+    InstallSLAHMROnVenv,
+    CreateVirtualEnviromentSLAHMR,
+    InstallPYTORCHOnVenvSLAHMR,
+    InstallDETECTRONOnVenvSLAHMR,
+    InstallSLAHMRandRESTOnVenv,
+    ExecuteSLAHMR,
+    ImportVideoSLAHMR,
+    Update_SLAHMR_Setting,
+    LoadVideo3dview,
+    ExportSLAHMRRAWAnimation,
+    ImportZIPAnimation,
+    ImportZIPSLAHMRDependencies,
+    ImportOfflineCheckpointWham,
+)
 
 
 def register():
 
     from bpy.utils import register_class
+
     for cls in classes:
         register_class(cls)
     bpy.types.Scene.fourd_prop = PointerProperty(type=PIXELMySettings)
@@ -96,27 +157,26 @@ def register():
     # bpy.types.Object.progress_bar = bpy.props.FloatProperty( name="Progress", subtype="PERCENTAGE",soft_min=0, soft_max=100, precision=0,)
     # bpy.types.Scene.progress_bar = bpy.props.FloatProperty( name="Progress", subtype="PERCENTAGE",soft_min=0, soft_max=100, precision=0,)
     bpy.types.Scene.active_action_index = bpy.props.IntProperty()
-    bpy.types.Scene.active_track_index = bpy.props.IntProperty(update=select_action_strip)
+    bpy.types.Scene.active_track_index = bpy.props.IntProperty(
+        update=select_action_strip
+    )
 
-    #seleciona source e target
+    # seleciona source e target
     bpy.types.Scene.source = PointerProperty(type=bpy.types.Object)
     bpy.types.Scene.target = PointerProperty(type=bpy.types.Object)
     bpy.types.Scene.target_mesh = PointerProperty(type=bpy.types.Object)
     bpy.types.Scene.target_stg2 = PointerProperty(type=bpy.types.Object)
     bpy.types.Scene.floor = PointerProperty(type=bpy.types.Object)
-    
+
     bpy.types.Scene.foot_lock_right = PointerProperty(type=bpy.types.Object)
     bpy.types.Scene.foot_lock_left = PointerProperty(type=bpy.types.Object)
 
 
-    
-
 def unregister():
     from bpy.utils import unregister_class
 
-
     for cls in reversed(classes):
-        unregister_class(cls) 
+        unregister_class(cls)
     del bpy.types.Scene.fourd_prop
     # del bpy.types.Scene.ceb_bark_img_path
     del bpy.types.Scene.fourd_venv
@@ -130,4 +190,3 @@ def unregister():
 
 if __name__ == "__main__":
     register()
-    
