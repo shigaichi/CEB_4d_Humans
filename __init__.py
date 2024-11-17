@@ -2,14 +2,19 @@ import bpy
 from bpy.props import PointerProperty
 from .four_d_humans_blender import *
 from .panel import *
+
+# FIXME: このimport必要か
+from .utils import *
+from .convert_joblib_pkl import *
 import os
+import logging
 
 bl_info = {
     "name": "CEB 4D Humans for test",
     "author": "Shubham Goel, Georgios Pavlakos, Jathushan Rajasegaran, Angjoo Kanazawa, Jitendra Malik, Shin, Soyong and Kim, Juyong and Halilaj, Eni and Black, Michael J., Carlos Barreto",
     "description": "",
     "blender": (3, 5, 0),
-    "version": (1, 0, 12),
+    "version": (1, 0, 13),
     "location": "UI > SidePanel",
     "warning": "",
     "category": "General",
@@ -52,6 +57,7 @@ print("Path ffmpeg", path_ffmpeg)
 os.environ["PATH"] += ";" + path_git + ";" + path_ffmpeg
 print("paths added")
 
+logger = logging.getLogger(__name__)
 
 classes = (
     PIXELMySettings,
@@ -143,6 +149,7 @@ classes = (
 
 
 def register():
+    logger.info("start register")
 
     from bpy.utils import register_class
 
@@ -173,6 +180,7 @@ def register():
 
 
 def unregister():
+    logger.info("start unregister")
     from bpy.utils import unregister_class
 
     for cls in reversed(classes):

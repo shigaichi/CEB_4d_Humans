@@ -13,6 +13,10 @@ DEFAULT_NAME = "py310_torch1.13.0_cu117_env"
 DEFAULT_NAME_WHAM = "py39_torch1.11.0_cu113_env"
 DEFAULT_NAME_SLAHMR = "py310_torch1.13.0_cu117_env_SLAHMR"
 
+from .utils import *
+
+logger = get_addon_logger()
+
 
 # def updt_bool_imgs(self,context):
 #     fourd_prop = context.scene.fourd_prop
@@ -383,32 +387,32 @@ class FOURDHUMANS_PT_Panel(bpy.types.Panel):
             "scipy",
         )
         flag_installed_smpl_male = join(
-            path_addon, "wham", "dataset", "body_models", "smpl", "SMPL_MALE.pkl"
+            path_addon, "WHAM", "dataset", "body_models", "smpl", "SMPL_MALE.pkl"
         )
         flag_installed_smpl_female = join(
-            path_addon, "wham", "dataset", "body_models", "smpl", "SMPL_FEMALE.pkl"
+            path_addon, "WHAM", "dataset", "body_models", "smpl", "SMPL_FEMALE.pkl"
         )
         flag_installed_smpl_neutral = join(
-            path_addon, "wham", "dataset", "body_models", "smpl", "SMPL_NEUTRAL.pkl"
+            path_addon, "WHAM", "dataset", "body_models", "smpl", "SMPL_NEUTRAL.pkl"
         )
-        flag_ckp_dpvo_pth = join(path_addon, "wham", "checkpoints", "dpvo.pth")
-        flag_ckp_hmr2a_ckpt = join(path_addon, "wham", "checkpoints", "hmr2a.ckpt")
+        flag_ckp_dpvo_pth = join(path_addon, "WHAM", "checkpoints", "dpvo.pth")
+        flag_ckp_hmr2a_ckpt = join(path_addon, "WHAM", "checkpoints", "hmr2a.ckpt")
         flag_ckp_vitpose = join(
-            path_addon, "wham", "checkpoints", "vitpose-h-multi-coco.pth"
+            path_addon, "WHAM", "checkpoints", "vitpose-h-multi-coco.pth"
         )
         flag_ckp_wham_vit_w = join(
-            path_addon, "wham", "checkpoints", "wham_vit_w_3dpw.pth.tar"
+            path_addon, "WHAM", "checkpoints", "wham_vit_w_3dpw.pth.tar"
         )
         flag_ckp_wha_vit_bedlam = join(
-            path_addon, "wham", "checkpoints", "wham_vit_bedlam_w_3dpw.pth.tar"
+            path_addon, "WHAM", "checkpoints", "wham_vit_bedlam_w_3dpw.pth.tar"
         )
-        flag_ckp_yolov8x = join(path_addon, "wham", "checkpoints", "yolov8x.pt")
+        flag_ckp_yolov8x = join(path_addon, "WHAM", "checkpoints", "yolov8x.pt")
         flag_wham_body_models = join(
-            path_addon, "wham", "dataset", "body_models", "smplx2smpl.pkl"
+            path_addon, "WHAM", "dataset", "body_models", "smplx2smpl.pkl"
         )
-        flag_video_wham = join(path_addon, "wham", "example_data", "video.mp4")
+        flag_video_wham = join(path_addon, "WHAM", "example_data", "video.mp4")
         flag_wham_pickle = join(
-            path_addon, "wham", "output", "demo", "video", "wham_output.pickle"
+            path_addon, "WHAM", "output", "demo", "video", "wham_output.pickle"
         )
 
         file_fbx = os.path.join(path_addon, "basicModel_m_lbs_10_207_0_v1.0.2.fbx")
@@ -1238,7 +1242,9 @@ class FOURDHUMANS_PT_Panel(bpy.types.Panel):
             row = row.column(align=True)
             row_import_character = row.column(align=1)
 
+            logger.info(f"flag_wham_pickle: {flag_wham_pickle}, file_fbx: {file_fbx}")
             if os.path.exists(flag_wham_pickle) and os.path.exists(file_fbx):
+                # FIXME: ここに来てほしい
                 row_import_character.enabled = True
                 row_import_character.alert = False
 
@@ -1287,6 +1293,7 @@ class FOURDHUMANS_PT_Panel(bpy.types.Panel):
             row_import_character.operator("fdh.import_character").option = (
                 2  # importa wham
             )
+
             if not os.path.exists(file_fbx):
                 row_import_character.label(text="Import the SMPL FBX")
 

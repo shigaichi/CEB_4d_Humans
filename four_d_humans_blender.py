@@ -1,4 +1,6 @@
 # from typing import Pattern
+import datetime
+import logging
 import bpy
 from bpy.types import Operator
 
@@ -12,6 +14,9 @@ import os, sys, glob
 
 # from shutil import copyfile,rmtree,move
 from os.path import join
+
+from .convert_joblib_pkl_wham import *
+
 from .panel import *
 import shutil
 import subprocess
@@ -19,6 +24,11 @@ import glob
 import pickle
 import mathutils
 from mathutils import *
+
+from .utils import *
+from .convert_joblib_pkl import *
+
+logger = get_addon_logger()
 
 
 def read_pkl_data(context, character=0):  # 0=4d humans, 1=wham
@@ -32,14 +42,18 @@ def read_pkl_data(context, character=0):  # 0=4d humans, 1=wham
         file = file_converted
         with open(file, "rb") as handle:
             b = pickle.load(handle)
+        save_to_json(b, "b.json")
 
         num_character = 0
         for fframe, data in enumerate(b.items()):
+            # FIXME: fix GVHMR
             len_char = len(data[1]["smpl"])
-            print("len_char: ", len_char)
+            logger.info(f"len_char: {len_char}")
             if num_character < len_char:
                 num_character = len_char
-                print("num_char:", num_character)
+                logger.info(
+                    f"num_char: {num_character}",
+                )
 
     if character == 1:
         base_file = os.path.join(path_addon, "WHAM", "output", "demo", "video")
@@ -54,6 +68,8 @@ def read_pkl_data(context, character=0):  # 0=4d humans, 1=wham
                 list_characters.append(str(i))
 
         num_character = len(list_characters)
+        # ['smpl_params_global', 'smpl_params_incam']
+        logger.info(list_characters)
 
         fourd_prop.str_list_characters = json.dumps(list_characters)
     fourd_prop.int_tot_character = num_character
@@ -1622,7 +1638,7 @@ class ExecuteWHAM(Operator):
         path_venv_full = join(path_venv, fourd_prop.str_custom_venv_name_wham)
         batch_file = "execute_wham.bat"
 
-        output_folder = join(path_addon, "wham", "output")
+        output_folder = join(path_addon, "WHAM", "output")
         if os.path.exists(output_folder):
             shutil.rmtree(output_folder)
             os.makedirs(output_folder, exist_ok=True)
@@ -1744,8 +1760,12 @@ class ImportCharacter(Operator):
     bl_description = "Import character"
 
     option: IntProperty(
-        name="Option", default=0
-    )  # 0='demo_video_converted.pkl' 1='demo_video_converted_smooth', 2=import wham pickle, 3=import slahmr
+        description="0='demo_video_converted.pkl' 1='demo_video_converted_smooth', 2=import wham pickle, 3=import slahmr",
+        name="Option",
+        default=0,
+        min=0,
+        max=3,
+    )  # type: ignore
 
     def execute(self, context):
 
@@ -1768,6 +1788,7 @@ class ImportCharacter(Operator):
         path_code = path_addon
 
         # file = os.path.join(base_file,'demo_video.pkl')
+        logger.info(f"start ImportCharacter#execute self.option: {self.option}")
         if self.option == 0:
             base_file = os.path.join(path_addon, "4D-Humans-main", "outputs", "results")
             file_converted = os.path.join(base_file, "demo_video_converted.pkl")
@@ -1775,7 +1796,7 @@ class ImportCharacter(Operator):
             base_file = os.path.join(path_addon, "4D-Humans-main", "outputs", "results")
             file_converted = os.path.join(base_file, "demo_video_converted_smooth.pkl")
         if self.option == 2:
-            base_file = os.path.join(path_addon, "wham", "output", "demo", "video")
+            base_file = os.path.join(path_addon, "WHAM", "output", "demo", "video")
             file_converted = os.path.join(base_file, "wham_output.pickle")
         if self.option == 3:  # slahmr
             base_files_npz = os.path.join(
@@ -1796,7 +1817,7 @@ class ImportCharacter(Operator):
         if self.option == 3:  # slahmr
             results = np.load(file)
 
-        print("path:", path_addon)
+        logger.info(f"path: {path_addon}")
 
         # file = r"D:\AI\0_mocap\4d-humans\4D-Humans-main\outputs\results\demo_takeover_raymind_walk_sit19636-19951.pkl"
         # file = os.path.join(path_code,'demo_gymnasts.pkl')
@@ -2021,7 +2042,7 @@ class ImportCharacter(Operator):
                 # arm_obj = 'Armature'
                 context.scene.source = arm_obj
 
-            print("success load")
+            logger.info("success load")
 
             # ob.data.use_auto_smooth = False  # autosmooth creates artifacts
             bpy.ops.object.select_all(action="DESELECT")
@@ -2071,11 +2092,19 @@ class ImportCharacter(Operator):
         if self.option == 2:  # para importar o WHAM
             list_characters = json.loads(fourd_prop.str_list_characters)
 
+            logger.info(
+                f"results.keys(): {results.keys()}, character: {character}, list_characters: {list_characters}"
+            )
+            logger.info(
+                f"results[list_characters[character]].keys(): {results[list_characters[character]].keys()}"
+            )
+            # logger.info(results)
+
             # qtd_frames = len(results[character]['pose'])
-            qtd_frames = len(results[int(list_characters[character])]["pose"])
+            qtd_frames = len(results[list_characters[character]]["pose"])
             # fourd_prop.int_tot_character = len(results)
             fourd_prop.int_tot_character = len(list_characters)
-            print("qtd frames: ", qtd_frames)
+            logger.info(f"qtd frames: {qtd_frames}")
             # frames_ids = results[character]['frame_ids']
             frames_ids = results[int(list_characters[character])]["frame_ids"]
 
@@ -2120,21 +2149,22 @@ class ImportCharacter(Operator):
                     )
                     bpy.context.view_layer.update()
                 else:
-                    print("skipping to the next")
+                    logger.info("skipping to the next")
         # else: # o de baixo é para o 4d humans
         if self.option in [0, 1]:  # 4d humans com e sem smoothnet
             # qtd_frames = len(results[character]['pose'])
             qtd_frames = len(results)
             fourd_prop.int_tot_character = qtd_frames
-            print("qtd frames: ", qtd_frames)
+            logger.info("qtd frames: %s", qtd_frames)
             # shape = results[character]['betas'].tolist()
             for fframe, data in enumerate(results.items()):
+                # FIXME: fix GVHMR
                 if character <= len(data[1]["smpl"]) - 1:
                     scene.frame_set(fframe)
                     # trans = [0.0, 0.0, 1.521]
                     trans = data[1]["camera"][character]
                     # shape = data[1]['smpl'][character]['betas']
-
+                    # FIXME: fix GVHMR
                     global_orient = data[1]["smpl"][character]["global_orient"]
                     # pelvis = fixed_pelvis_quat[fframe]
                     # global_orient = np.array(Quaternion(pelvis).to_matrix()).reshape(1,3,3)
@@ -2144,6 +2174,7 @@ class ImportCharacter(Operator):
                     # rotation_y = Matrix.Rotation(math.radians(90.0),3,'Y') #rodar ao redor de X
                     # global_orient = global_orient @ rotation_x @rotation_y
 
+                    # FIXME: fix GVHMR
                     body_pose = data[1]["smpl"][character]["body_pose"]
                     final_body_pose = np.vstack([global_orient, body_pose])
                     # apply_trans_pose_shape(Vector(trans), final_body_pose, shape, obj,arm_ob, obname, scene, cam_ob, fframe)
@@ -2153,7 +2184,7 @@ class ImportCharacter(Operator):
                     )
                     bpy.context.view_layer.update()
                 else:
-                    print("skipping to the next")
+                    logger.info("skipping to the next")
 
         if self.option == 3:  # SLAHMR
             # qtd_frames = len(results[character]['pose'])
@@ -2180,8 +2211,8 @@ class ImportCharacter(Operator):
                 else:
                     print("skipping to the next")
 
-        print("antes_arm_ob: ", arm_ob.name)
-        print("antes_obj: ", obj.name)
+        logger.info("antes_arm_ob: %s", arm_ob.name)
+        logger.info("antes_obj: %s", obj.name)
         if not fourd_prop.bool_use_selected_character:
             # arm_ob.name = 'Finalized_Armature_CH'+str(fourd_prop.int_character).zfill(2)
             if self.option == 2:  # para importar o WHAM
@@ -2512,21 +2543,26 @@ class ImportPKLAnimation(Operator, ImportHelper):
     bl_description = "Import PKL RAW Animation"
 
     option: IntProperty(
-        name="Chosse type PKL", default=0
-    )  # 0 = CEB 4d Humans PKL (Pickle) | 1 = 4d Humans PKL (joblib - google colab)
-    #                                                       2 = WHAM (Pickle) | 3 = Wham Google Colab
+        description="0 = CEB 4d Humans PKL (Pickle) | 1 = 4d Humans PKL (joblib - google colab) 2 = WHAM (Pickle) | 3 = Wham Google Colab",
+        name="Chosse type PKL",
+        default=0,
+    )  # type: ignore
 
     filename_ext = ".pkl"
     filter_glob: StringProperty(
         default="*.pkl",
         options={"HIDDEN"},
         maxlen=255,  # Max internal buffer length, longer would be clamped.
-    )
+    )  # type: ignore
 
     def execute(self, context):
+        logger.info("start ImportPKLAnimation#execute")
+        logger.info(f"self option: {self.option}, self filepath: {self.filepath}")
+
         path_addon = os.path.dirname(os.path.abspath(__file__))
         fourd_prop = context.scene.fourd_prop
 
+        # inputとなるpkl
         src = self.filepath
         if self.option in [0, 1]:
             base_file = os.path.join(path_addon, "4D-Humans-main", "outputs", "results")
@@ -2534,15 +2570,21 @@ class ImportPKLAnimation(Operator, ImportHelper):
             base_file = os.path.join(path_addon, "WHAM", "output", "demo", "video")
 
         if os.path.exists(base_file):
-            shutil.rmtree(base_file)
+            # バックアップディレクトリ名を作成
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            backup_dir = f"{base_file}_backup_{timestamp}"
+            # 元のディレクトリをバックアップディレクトリに移動
+            shutil.move(base_file, backup_dir)
+            logger.info((f"Backup created: {backup_dir}"))
             os.makedirs(base_file, exist_ok=True)
         else:
             os.makedirs(base_file, exist_ok=True)
 
         if self.option == 0:
+            logger.warn("Shouldn't go through here.")
             dst = os.path.join(base_file, "demo_video_converted.pkl")
-            shutil.copyfile(src, dst)  # copia o arquivo
-        if self.option == 1:  #
+            safe_copyfile(src, dst)
+        if self.option == 1:
             dst = os.path.join(base_file, "demo_video.pkl")
             path_venv = fourd_prop.str_venv_path
             path_venv_full = join(path_venv, fourd_prop.str_custom_venv_name)
@@ -2554,18 +2596,21 @@ class ImportPKLAnimation(Operator, ImportHelper):
                 )
                 fout.write("\npython convert_joblib_pkl.py")
 
-            shutil.copyfile(src, dst)  # copia o arquivo
-            path_folder = join(path_addon)
-            current_folder = os.getcwd()
-            os.chdir(path_folder)
+            # copy pkl to demo_video.pkl
+            safe_copyfile(src, dst)
+            # path_folder = join(path_addon)
+            # current_folder = os.getcwd()
+            # os.chdir(path_folder)
 
-            run = [join(path_addon, batch_file)]
+            # run = [join(path_addon, batch_file)]
 
-            print("run: ", run)
-            subprocess.run(run)  # Executa
-            os.chdir(current_folder)
+            # print("run: ", run)
+            # subprocess.run(run)  # Executa
+            # os.chdir(current_folder)
+            convert_joblib_pkl()
 
         if self.option == 2:  # wham import
+            logger.warn("Shouldn't go through here.")
             dst = os.path.join(base_file, "wham_output.pickle")
             shutil.copyfile(src, dst)  # copia o arquivo
 
@@ -2581,16 +2626,17 @@ class ImportPKLAnimation(Operator, ImportHelper):
                 )
                 fout.write("\npython convert_joblib_pkl_wham.py")
 
-            shutil.copyfile(src, dst)  # copia o arquivo
-            path_folder = join(path_addon)
-            current_folder = os.getcwd()
-            os.chdir(path_folder)
+            safe_copyfile(src, dst)
+            # path_folder = join(path_addon)
+            # current_folder = os.getcwd()
+            # os.chdir(path_folder)
 
-            run = [join(path_addon, batch_file)]
+            # run = [join(path_addon, batch_file)]
 
-            print("run: ", run)
-            subprocess.run(run)  # Executa
-            os.chdir(current_folder)
+            # print("run: ", run)
+            # subprocess.run(run)  # Executa
+            # os.chdir(current_folder)
+            convert_joblib_pkl_wham()
 
         fourd_prop.str_pklpath = src
         fourd_prop.str_videopath = ""
