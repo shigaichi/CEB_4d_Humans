@@ -9,7 +9,7 @@ def convert_pkl(old_pkl):
     # Script is from https://rebeccabilbro.github.io/convert-py2-pickles-to-py3/
 
     # Make a name for the new pickle
-    new_pkl = os.path.splitext(os.path.basename(old_pkl))[0]+"_p3.pkl"
+    new_pkl = os.path.splitext(os.path.basename(old_pkl))[0] + "_p3.pkl"
 
     # Convert Python 2 "ObjectType" to Python 3 object
     dill._dill._reverse_typemap["ObjectType"] = object
@@ -22,6 +22,7 @@ def convert_pkl(old_pkl):
     with open(new_pkl, "wb") as outfile:
         pickle.dump(loaded, outfile)
 
+
 path_addon = os.path.dirname(os.path.abspath(__file__))
-old_pkl = os.path.join(path_addon,'basicModel_neutral_lbs_10_207_0_v1.0.0.pkl')
+old_pkl = os.path.join(path_addon, "basicModel_neutral_lbs_10_207_0_v1.0.0.pkl")
 convert_pkl(old_pkl)
